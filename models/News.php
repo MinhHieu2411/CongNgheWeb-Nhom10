@@ -1,47 +1,27 @@
 <?php
 class News {
-    private $conn;
-    private $table_name = "news";
+    private $id;
+    private $title;
+    private $content;
+    private $image;
+    private $created_at;
+    private $category_id;
 
-    public function __construct($db) {
-        $this->conn = $db;
+    private $db;
+    public function __construct() {
+        $this->db = new PDO('mysql:host=localhost;dbname=tintuc', 'root', '');
     }
+    
 
-    // Lấy tất cả bài viết
-    public function getAllNews() {
-        $query = "SELECT n.*, c.name AS category_name 
-                  FROM " . $this->table_name . " n 
-                  JOIN categories c ON n.category_id = c.id 
-                  ORDER BY n.created_at DESC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Thêm bài viết mới
-    public function createNews($title, $content, $image, $category_id) {
-        $query = "INSERT INTO " . $this->table_name . " (title, content, image, created_at, category_id) 
-                  VALUES (:title, :content, :image, NOW(), :category_id)";
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(":title", $title);
-        $stmt->bindParam(":content", $content);
-        $stmt->bindParam(":image", $image);
-        $stmt->bindParam(":category_id", $category_id);
-
-        return $stmt->execute();
-    }
-
-    // Lấy bài viết theo ID
-    public function getNewsById($id) {
-        $query = "SELECT n.*, c.name AS category_name 
-                  FROM " . $this->table_name . " n 
-                  JOIN categories c ON n.category_id = c.id 
-                  WHERE n.id = :id LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id", $id);
-        $stmt->execute();
+    public function getById($id) {
+        $stmt = $this->db->prepare('SELECT * FROM news WHERE id = :id');
+        $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public static function getAll() {
+        $db = new PDO('mysql:host=localhost;dbname=tintuc', 'root', '');
+        $stmt = $db->query("SELECT * FROM news");
+        return $stmt->fetchAll();
+    }
+    
 }
-?>
